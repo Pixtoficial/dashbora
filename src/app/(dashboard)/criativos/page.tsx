@@ -25,6 +25,21 @@ function parseYouTube(url: string): string | null {
   return null;
 }
 
+interface InstagramMedia {
+  shortcode: string;
+  type: "p" | "reel" | "tv";
+}
+
+function parseInstagram(url: string): InstagramMedia | null {
+  try {
+    const u = new URL(url);
+    if (!u.hostname.includes("instagram.com") && !u.hostname.includes("instagr.am")) return null;
+    const match = u.pathname.match(/\/(p|reel|tv)\/([A-Za-z0-9_-]+)/);
+    if (match) return { type: match[1] as InstagramMedia["type"], shortcode: match[2] };
+  } catch {/* */}
+  return null;
+}
+
 function isVideoUrl(url: string): boolean {
   return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
 }
@@ -45,9 +60,32 @@ function fmtNumber(v: number) {
 
 /* ─── media preview ───────────────────────────────────────────────────────── */
 
+/* Instagram SVG icon */
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#FFDC80" />
+          <stop offset="25%" stopColor="#FCAF45" />
+          <stop offset="50%" stopColor="#F77737" />
+          <stop offset="75%" stopColor="#F56040" />
+          <stop offset="100%" stopColor="#833AB4" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="20" height="20" rx="5" fill="url(#ig-grad)" />
+      <rect x="6.5" y="6.5" width="11" height="11" rx="3" stroke="white" strokeWidth="1.5" fill="none" />
+      <circle cx="12" cy="12" r="2.8" stroke="white" strokeWidth="1.5" fill="none" />
+      <circle cx="16.5" cy="7.5" r="1" fill="white" />
+    </svg>
+  );
+}
+
 function MediaPreview({ url }: { url: string }) {
   const ytId = parseYouTube(url);
+  const igData = parseInstagram(url);
 
+  /* YouTube embed */
   if (ytId) {
     return (
       <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
@@ -62,6 +100,44 @@ function MediaPreview({ url }: { url: string }) {
     );
   }
 
+  /* Instagram embed (Post / Reel / IGTV) */
+  if (igData) {
+    const isReel = igData.type === "reel" || igData.type === "tv";
+    /* aspect-ratio: Reels são 9:16 (vertical), posts são ~1:1 */
+    const paddingTop = isReel ? "177.78%" : "120%";
+    const embedUrl = `https://www.instagram.com/${igData.type}/${igData.shortcode}/embed/`;
+    return (
+      <div className="relative w-full overflow-hidden rounded-lg bg-[#0a0a0a]">
+        {/* Header imitando a UI do Instagram */}
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
+          <InstagramIcon className="w-5 h-5 shrink-0" />
+          <span className="text-[11px] font-semibold text-white/80">
+            {isReel ? "Instagram Reel" : "Instagram Post"}
+          </span>
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto flex items-center gap-1 text-[10px] text-white/40 hover:text-white/80 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Abrir <ExternalLink className="w-2.5 h-2.5" />
+          </a>
+        </div>
+        <div className="relative w-full" style={{ paddingTop }}>
+          <iframe
+            className="absolute inset-0 w-full h-full border-0"
+            src={embedUrl}
+            allowFullScreen
+            scrolling="no"
+            title="Instagram"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  /* Arquivo de vídeo direto */
   if (isVideoUrl(url)) {
     return (
       <video
@@ -72,6 +148,7 @@ function MediaPreview({ url }: { url: string }) {
     );
   }
 
+  /* Imagem direta */
   if (isImageUrl(url)) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
@@ -83,7 +160,7 @@ function MediaPreview({ url }: { url: string }) {
     );
   }
 
-  // fallback: show link as thumbnail
+  /* Fallback genérico */
   return (
     <a
       href={url}
@@ -370,7 +447,9 @@ function CriativoCard({
           {/* Header bar */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              {isImageUrl(criativo.link) ? (
+              {parseInstagram(criativo.link) ? (
+                <InstagramIcon className="w-4 h-4 shrink-0" />
+              ) : isImageUrl(criativo.link) ? (
                 <ImageIcon className="w-4 h-4 text-muted-foreground shrink-0" />
               ) : parseYouTube(criativo.link) || isVideoUrl(criativo.link) ? (
                 <PlayCircle className="w-4 h-4 text-muted-foreground shrink-0" />

@@ -87,7 +87,7 @@ function CampaignCard({ c, isAdmin, onSaveCampaign }: CampaignCardProps) {
       </div>
 
       {/* Summary metrics */}
-      <div className="grid grid-cols-4 gap-0 divide-x divide-border/50">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 divide-x divide-border/50">
         {[
           { label: "Gasto",      value: formatCurrency(c.spend) },
           { label: "Cliques",    value: formatNumber(c.clicks) },
@@ -296,7 +296,7 @@ function CampaignTypeCard({ data, isAdmin, onSave }: { data: GoogleCampaignType;
       ) : (
         <>
           <p className="text-2xl font-bold tracking-tight" style={{ color: accent }}>{formatCurrency(data.cost)}</p>
-          <div className="grid grid-cols-3 gap-2 pt-1 border-t border-border/50">
+          <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 pt-1 border-t border-border/50">
             <div><p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Cliques</p><p className="text-sm font-semibold font-mono">{formatNumber(data.clicks)}</p></div>
             <div><p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Conversões</p><p className="text-sm font-semibold font-mono">{formatNumber(data.conversions)}</p></div>
             <div><p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">ROAS</p><p className="text-sm font-semibold font-mono text-emerald-400">{formatMultiplier(data.roas)}</p></div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Target,
@@ -14,8 +14,12 @@ import {
   Users,
   FileText,
   Filter,
+  ImagePlay,
+  Network,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
@@ -32,19 +36,21 @@ const NAV_GROUPS = [
   {
     label: "Analytics & Funil",
     items: [
-      { href: "/usuarios", label: "Usuários",           icon: Users,    badge: undefined },
-      { href: "/paginas",  label: "Páginas Visitadas",  icon: FileText, badge: undefined },
-      { href: "/funil",    label: "Funil",              icon: Filter,   badge: "NOVO" },
+      { href: "/usuarios",  label: "Usuários",           icon: Users,       badge: undefined },
+      { href: "/paginas",   label: "Páginas Visitadas",  icon: FileText,    badge: undefined },
+      { href: "/funil",     label: "Funil",              icon: Filter,      badge: "NOVO" },
+      { href: "/criativos",  label: "Criativos",          icon: ImagePlay,   badge: "NOVO" },
+      { href: "/estrategia",label: "Estratégia",         icon: Network,     badge: "NOVO" },
     ],
   },
 ];
 
-export function Sidebar() {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
   return (
-    <aside className="hidden md:flex flex-col w-60 min-h-screen bg-card border-r border-border">
+    <div className="flex flex-col h-full w-64 bg-card border-r border-border">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-border">
         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
@@ -70,6 +76,7 @@ export function Sidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={onNavigate}
                     className={cn(
                       "relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group",
                       active
@@ -111,6 +118,7 @@ export function Sidebar() {
             </p>
             <Link
               href="/settings"
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
                 pathname === "/settings"
@@ -144,6 +152,55 @@ export function Sidebar() {
           Sair
         </button>
       </div>
-    </aside>
+    </div>
+  );
+}
+
+export function Sidebar() {
+  const { open, setOpen } = useSidebar();
+
+  return (
+    <>
+      {/* Desktop */}
+      <aside className="hidden md:flex flex-col min-h-screen w-64 shrink-0">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40 bg-black/60 md:hidden"
+              onClick={() => setOpen(false)}
+            />
+            <motion.aside
+              key="drawer"
+              initial={{ x: -264 }}
+              animate={{ x: 0 }}
+              exit={{ x: -264 }}
+              transition={{ type: "spring", damping: 28, stiffness: 280 }}
+              className="fixed top-0 left-0 z-50 h-full md:hidden shadow-2xl"
+            >
+              <div className="relative h-full">
+                <button
+                  onClick={() => setOpen(false)}
+                  className="absolute top-4 right-3 z-10 p-1.5 rounded-lg text-muted-foreground hover:bg-accent transition-colors"
+                  aria-label="Fechar menu"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <SidebarContent onNavigate={() => setOpen(false)} />
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

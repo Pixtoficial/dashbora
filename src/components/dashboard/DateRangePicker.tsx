@@ -79,7 +79,7 @@ export function DateRangePicker() {
 
       <PopoverContent
         align="end"
-        className="w-auto p-0 flex flex-col sm:flex-row shadow-xl"
+        className="w-auto p-0 flex flex-col sm:flex-row shadow-xl max-h-[90vh] overflow-y-auto overflow-x-hidden"
         sideOffset={8}
       >
         {/* ── Left panel: presets ── */}

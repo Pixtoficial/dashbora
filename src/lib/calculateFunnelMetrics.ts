@@ -41,7 +41,7 @@ export interface FunnelDayData {
 
   // ── Calculados (frontend/backend) ─────────────────────────────────────
   costPerPageView: number;        // cost / pageViews
-  connectRate: number;            // (clicks / pageViews) × 100  (%)
+  connectRate: number;            // (pageViews / clicks) × 100  (%)
   pageViewToContact: number;      // (pageViews / totalLeads)  (ratio x:1 ou %)
   cpl: number;                    // cost / totalLeads
   pageViewToAddToCart: number;    // (addToCart / pageViews) × 100
@@ -101,7 +101,7 @@ export const LEADS_FUNNEL_METRICS: FunnelMetricDef[] = [
   { key: "cpc",               label: "CPC",                   format: "currency",   source: "google_ads", funnelGroup: C, invertColor: true },
   { key: "pageViews",         label: "Page View",             format: "integer",    source: "ga4",        funnelGroup: S, groupBefore: "Funil do Site / LP" },
   { key: "costPerPageView",   label: "Custo por Page View",   format: "currency",   source: "calculated", funnelGroup: S, invertColor: true, formula: "Investimento ÷ Page Views" },
-  { key: "connectRate",       label: "Connect Rate",          format: "percent",    source: "calculated", funnelGroup: S, formula: "Cliques ÷ Page Views × 100" },
+  { key: "connectRate",       label: "Connect Rate",          format: "percent",    source: "calculated", funnelGroup: S, formula: "Page Views ÷ Cliques × 100" },
   { key: "pageViewToContact", label: "Page View × Contato",  format: "decimal",    source: "calculated", funnelGroup: S, formula: "Page Views ÷ Leads" },
   { key: "trackedLeads",      label: "Leads Rastreados",      format: "integer",    source: "ga4",        funnelGroup: S },
   { key: "totalLeads",        label: "Leads Totais (GA4)",    format: "integer",    source: "ga4",        funnelGroup: S },
@@ -175,7 +175,7 @@ export function calculateFunnelMetrics(
 
     // ── Calculated ────────────────────────────────────────────────────────
     const costPerPageView = pageViews > 0 ? cost / pageViews : 0;
-    const connectRate = pageViews > 0 ? (clicks / pageViews) * 100 : 0;
+    const connectRate = clicks > 0 ? (pageViews / clicks) * 100 : 0;
     const pageViewToContact = totalLeads > 0 ? pageViews / totalLeads : 0;
     const cpl = totalLeads > 0 ? cost / totalLeads : 0;
     const pageViewToAddToCart = pageViews > 0 ? (addToCart / pageViews) * 100 : 0;
@@ -239,7 +239,7 @@ export function calculateFunnelTotals(days: FunnelDayData[]): FunnelTotals {
     purchases,
     revenue,
     costPerPageView: pageViews > 0 ? cost / pageViews : 0,
-    connectRate: pageViews > 0 ? (clicks / pageViews) * 100 : 0,
+    connectRate: clicks > 0 ? (pageViews / clicks) * 100 : 0,
     pageViewToContact: totalLeads > 0 ? pageViews / totalLeads : 0,
     cpl: totalLeads > 0 ? cost / totalLeads : 0,
     pageViewToAddToCart: pageViews > 0 ? (addToCart / pageViews) * 100 : 0,
@@ -266,7 +266,7 @@ export function recalculateDayFromRaw(day: FunnelDayData): FunnelDayData {
     cpmc:                impressions > 0  ? (cost / impressions) * 1000       : 0,
     cpc:                 clicks > 0       ? cost / clicks                     : 0,
     costPerPageView:     pageViews > 0    ? cost / pageViews                  : 0,
-    connectRate:         pageViews > 0    ? (clicks / pageViews) * 100        : 0,
+    connectRate:         clicks > 0         ? (pageViews / clicks) * 100        : 0,
     pageViewToContact:   totalLeads > 0   ? pageViews / totalLeads            : 0,
     cpl:                 totalLeads > 0   ? cost / totalLeads                 : 0,
     pageViewToAddToCart: pageViews > 0    ? (addToCart / pageViews) * 100     : 0,

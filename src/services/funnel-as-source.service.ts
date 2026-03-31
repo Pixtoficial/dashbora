@@ -87,7 +87,7 @@ export function funnelToGA4KPIs(funnel: ManualFunnelData): GA4KPIs {
   const users    = Math.round(sessions * 0.7);
   const convEvents = t.totalLeads + t.purchases;
 
-  // connectRate (cliques/pageViews) usado como proxy de engajamento
+  // connectRate (pageViews ÷ cliques × 100) usado como proxy de engajamento
   const engagement = t.connectRate;
 
   return {

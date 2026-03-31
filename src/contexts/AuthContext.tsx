@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { User } from "@/types";
 import { login as loginService, logout as logoutService, getStoredUser } from "@/services/auth.service";
+import { initStore } from "@/services/manual-data.service";
 
 interface AuthContextValue {
   user: User | null;
@@ -24,10 +25,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Restore session from localStorage
+    // Restore session from localStorage + sync dados manuais do servidor
     const stored = getStoredUser();
     setUser(stored);
-    setIsLoading(false);
+    initStore().finally(() => setIsLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

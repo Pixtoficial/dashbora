@@ -27,7 +27,14 @@ export const redis = {
     const result = await cmd(cfg, ["GET", key]);
     if (result === null || result === undefined) return null;
     if (typeof result === "string") {
-      try { return JSON.parse(result) as T; } catch { return result as unknown as T; }
+      try {
+        const parsed = JSON.parse(result);
+        // Dados antigos foram duplamente codificados — parse extra se ainda for string
+        if (typeof parsed === "string") {
+          try { return JSON.parse(parsed) as T; } catch { return parsed as unknown as T; }
+        }
+        return parsed as T;
+      } catch { return result as unknown as T; }
     }
     return result as T;
   },

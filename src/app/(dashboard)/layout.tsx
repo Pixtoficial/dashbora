@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
@@ -15,6 +15,7 @@ export default function DashboardLayout({
 }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [storeKey, setStoreKey] = useState(0);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -24,7 +25,9 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!isLoading && user) {
-      initStore();
+      initStore().then((hasNewData) => {
+        if (hasNewData) setStoreKey((k) => k + 1);
+      });
     }
   }, [user, isLoading]);
 
@@ -42,7 +45,7 @@ export default function DashboardLayout({
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <Header />
-          <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
+          <main key={storeKey} className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
         </div>
       </div>
     </SidebarProvider>

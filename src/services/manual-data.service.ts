@@ -75,18 +75,23 @@ export function hasManualSection(section: string): boolean {
  * Chamar uma vez na inicialização do app para garantir que todos os
  * dispositivos/usuários vejam os mesmos dados.
  */
-export async function initStore(): Promise<void> {
-  if (typeof window === "undefined") return;
+/**
+ * Retorna true se dados novos foram carregados do servidor.
+ */
+export async function initStore(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
   try {
     const res = await fetch("/api/store");
-    if (!res.ok) return;
+    if (!res.ok) return false;
     const serverStore = await res.json() as ManualStore;
-    if (Object.keys(serverStore).length === 0) return;
+    if (Object.keys(serverStore).length === 0) return false;
     // Mescla: servidor tem prioridade sobre localStorage local
     const localStore = loadStore();
     const merged = { ...localStore, ...serverStore };
     saveStore(merged);
+    return true;
   } catch {
     // Sem Redis configurado ou offline — continua com localStorage
+    return false;
   }
 }

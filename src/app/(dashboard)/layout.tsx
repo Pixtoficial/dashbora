@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Header } from "@/components/dashboard/Header";
+import { initStore } from "@/services/manual-data.service";
 
 export default function DashboardLayout({
   children,
@@ -20,6 +21,12 @@ export default function DashboardLayout({
       router.replace("/login");
     }
   }, [user, isLoading, router]);
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      initStore();
+    }
+  }, [user, isLoading]);
 
   if (isLoading || !user) {
     return (
